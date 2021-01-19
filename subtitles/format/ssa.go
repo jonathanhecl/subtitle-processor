@@ -68,3 +68,7 @@ type ItemSSA struct {
 	Effect  string
 	Text    string
 }
+
+func IsSSA(content string) bool {
+	return false
+}

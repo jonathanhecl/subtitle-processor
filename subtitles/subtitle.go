@@ -1,25 +1,36 @@
 package subtitles
 
-import "time"
+import (
+	"io/ioutil"
+	"log"
+	"strings"
 
-type modelItemSubtitle struct {
-	Seq   int
-	Start time.Time
-	End   time.Time
-	Text  string
-}
+	"github.com/jonathanhecl/subtitle-processor/subtitles/format"
+	"github.com/jonathanhecl/subtitle-processor/subtitles/models"
+)
 
-type modelSubtitle struct {
+type Subtitle struct {
 	Filename string
 	Format   string
-	Lines    []modelItemSubtitle
+	Lines    []models.ModelItemSubtitle
 }
 
-func LoadFilename(filename string) modelSubtitle {
-	n := modelSubtitle{
-		Filename: filename,
-		Format:   "unknown",
-		Lines:    []modelItemSubtitle{},
+func (sub *Subtitle) LoadFilename(filename string) (err error) {
+	sub.Filename = filename
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+		return err
 	}
-	return n
+	content := string(data)
+	content = strings.Replace(content, "\r\n", "\n", -1) // standardize line break
+	content += "\n"                                      // last line break
+	ret, err := format.ReadSRT(content)
+	if err == nil {
+		sub.Format = "SRT"
+		sub.Lines = ret
+	}
+
+	return err
 }
