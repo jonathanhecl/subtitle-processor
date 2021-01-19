@@ -8,7 +8,7 @@ import (
 
 var version = map[string]int{
 	"major": 1,
-	"minor": 0,
+	"minor": 1,
 }
 
 func main() {

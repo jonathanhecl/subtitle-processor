@@ -10,9 +10,13 @@ import (
 	"github.com/jonathanhecl/subtitle-processor/subtitles/models"
 )
 
-const (
-	srtTimeSeparator = " --> "
-)
+/*
+
+STR Validation
+
+(\d)\n((\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*))\n((?:\n?.)*?)\n\n
+
+*/
 
 /*
 1
@@ -26,6 +30,10 @@ Very good, Lieutenant.
 */
 
 func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
+	exp := regexp.MustCompile(`(\d)\n((\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*))\n((?:\n?.)*?)\n\n`)
+	if !exp.MatchString(content) {
+		return ret, errors.New("Invalid SRT")
+	}
 	lines := strings.Split(content, "\n")
 	dummy := models.ModelItemSubtitle{}
 	for i := range lines {
