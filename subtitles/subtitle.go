@@ -26,10 +26,17 @@ func (sub *Subtitle) LoadFilename(filename string) (err error) {
 	content := string(data)
 	content = strings.Replace(content, "\r\n", "\n", -1) // standardize line break
 	content += "\n\n"                                    // lastest line break
-	ret, err := format.ReadSRT(content)
+	ret, err := format.ReadSRT(content)                  // check if it is the SRT format
 	if err == nil {
 		sub.Format = "SRT"
 		sub.Lines = ret
+	}
+	if len(sub.Format) == 0 {
+		ret, err := format.ReadSSA(content) // check if it is the SSA format
+		if err == nil {
+			sub.Format = "SSA"
+			sub.Lines = ret
+		}
 	}
 
 	return err

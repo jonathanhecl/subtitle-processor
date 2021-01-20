@@ -69,7 +69,7 @@ func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
 
 func formatStringSRT2Duration(line string) (start time.Duration, end time.Duration, err error) {
 	exp := regexp.MustCompile(`(\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*)`)
-	res := exp.Copy().FindAllStringSubmatch(line, -1)
+	res := exp.FindAllStringSubmatch(line, -1)
 	if len(res) == 1 {
 		if len(res[0]) == 9 {
 			start = (time.Duration(toInt(res[0][1])) * time.Hour) + (time.Duration(toInt(res[0][2])) * time.Minute) + (time.Duration(toInt(res[0][3])) * time.Second) + (time.Duration(toInt(res[0][4])) * time.Millisecond)
