@@ -2,8 +2,8 @@ package subtitles
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -15,6 +15,7 @@ type Subtitle struct {
 	Filename string
 	Format   string
 	Lines    []models.ModelItemSubtitle
+	Verbose  bool
 }
 
 func (sub *Subtitle) LoadFilename(filename string) (err error) {
@@ -22,7 +23,7 @@ func (sub *Subtitle) LoadFilename(filename string) (err error) {
 
 	start := time.Now()
 
-	raw, err := ioutil.ReadFile(filename)
+	raw, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -44,7 +45,19 @@ func (sub *Subtitle) LoadFilename(filename string) (err error) {
 		}
 	}
 
-	fmt.Println("Processed in ", time.Since(start).String())
+	if sub.Verbose {
+		fmt.Println("Processed in ", time.Since(start).String())
+	}
+
+	return err
+}
+
+func (sub *Subtitle) SaveFilename(filename string) (err error) {
+	start := time.Now()
+
+	if sub.Verbose {
+		fmt.Println("Processed in ", time.Since(start).String())
+	}
 
 	return err
 }

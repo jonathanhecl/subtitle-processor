@@ -15,6 +15,7 @@ func main() {
 	fmt.Println(fmt.Sprintf("Subtitle Processor v%d.%d", version["major"], version["minor"]))
 
 	s1 := subtitles.Subtitle{}
+	s1.Verbose = true
 	s1.LoadFilename("./demo.srt")
 	fmt.Println(s1.Filename)
 	fmt.Println(s1.Format)
@@ -31,6 +32,7 @@ func main() {
 	fmt.Println("------------------")
 
 	s2 := subtitles.Subtitle{}
+	s2.Verbose = true
 	s2.LoadFilename("./demo.ssa")
 	fmt.Println(s2.Filename)
 	fmt.Println(s2.Format)
