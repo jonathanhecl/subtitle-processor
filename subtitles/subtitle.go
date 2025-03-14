@@ -1,6 +1,7 @@
 package subtitles
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -54,6 +55,25 @@ func (sub *Subtitle) LoadFilename(filename string) (err error) {
 
 func (sub *Subtitle) SaveFilename(filename string) (err error) {
 	start := time.Now()
+
+	if len(sub.Format) == 0 {
+		return errors.New("Format not specified")
+	}
+
+	content := ""
+
+	if sub.Format == "SRT" {
+		content = format.WriteSRT(sub)
+	}
+	if sub.Format == "SSA" {
+		content = format.WriteSSA(sub)
+	}
+
+	err = os.WriteFile(filename, []byte(content), 0644)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
 
 	if sub.Verbose {
 		fmt.Println("Processed in ", time.Since(start).String())
