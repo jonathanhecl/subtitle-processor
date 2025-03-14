@@ -16,7 +16,7 @@ func main() {
 
 	s1 := subtitles.Subtitle{}
 	s1.Verbose = true
-	s1.LoadFilename("./demo.srt")
+	s1.LoadFile("./demo.srt")
 	fmt.Println(s1.Filename)
 	fmt.Println(s1.Format)
 	fmt.Println("Lines: ", len(s1.Lines))
@@ -33,7 +33,7 @@ func main() {
 
 	s2 := subtitles.Subtitle{}
 	s2.Verbose = true
-	s2.LoadFilename("./demo.ssa")
+	s2.LoadFile("./demo.ssa")
 	fmt.Println(s2.Filename)
 	fmt.Println(s2.Format)
 	fmt.Println("Lines: ", len(s2.Lines))

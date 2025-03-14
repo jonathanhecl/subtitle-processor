@@ -14,7 +14,7 @@ import (
 
 type Subtitle models.Subtitle
 
-func (sub *Subtitle) LoadFilename(filename string) (err error) {
+func (sub *Subtitle) LoadFile(filename string) (err error) {
 	sub.Filename = filename
 
 	start := time.Now()
@@ -48,7 +48,7 @@ func (sub *Subtitle) LoadFilename(filename string) (err error) {
 	return err
 }
 
-func (sub *Subtitle) SaveFilename(filename string) (err error) {
+func (sub *Subtitle) SaveFile(filename string) (err error) {
 	start := time.Now()
 
 	if len(sub.Format) == 0 {
