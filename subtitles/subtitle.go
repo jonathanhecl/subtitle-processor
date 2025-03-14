@@ -12,12 +12,7 @@ import (
 	"github.com/jonathanhecl/subtitle-processor/subtitles/models"
 )
 
-type Subtitle struct {
-	Filename string
-	Format   string
-	Lines    []models.ModelItemSubtitle
-	Verbose  bool
-}
+type Subtitle models.Subtitle
 
 func (sub *Subtitle) LoadFilename(filename string) (err error) {
 	sub.Filename = filename
@@ -63,10 +58,10 @@ func (sub *Subtitle) SaveFilename(filename string) (err error) {
 	content := ""
 
 	if sub.Format == "SRT" {
-		content = format.WriteSRT(sub)
+		content = format.WriteSRT(&models.Subtitle{Lines: sub.Lines})
 	}
 	if sub.Format == "SSA" {
-		content = format.WriteSSA(sub)
+		content = format.WriteSSA(&models.Subtitle{Lines: sub.Lines})
 	}
 
 	err = os.WriteFile(filename, []byte(content), 0644)

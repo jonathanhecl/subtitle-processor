@@ -2,6 +2,7 @@ package format
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -84,4 +85,37 @@ func ReadSSA(content string) (ret []models.ModelItemSubtitle, err error) {
 func formatSSA2Duration(hour string, minute string, second string, millisecond string) (duration time.Duration) {
 	duration = (time.Duration(toInt(hour)) * time.Hour) + (time.Duration(toInt(minute)) * time.Minute) + (time.Duration(toInt(second)) * time.Second) + (time.Duration(toInt(millisecond)) * time.Millisecond)
 	return duration
+}
+
+func WriteSSA(sub *models.Subtitle) (content string) {
+	content = `[Script Info]
+; This is a Sub Station Alpha v4 script.
+ScriptType: v4.00
+Collisions: Normal
+PlayResY: 600
+PlayDepth: 0
+Timer: 100,0000
+
+[V4 Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding
+Style: DefaultVCD, Arial,28,11861244,11861244,11861244,-2147483640,-1,0,1,1,2,2,30,30,30,0,0
+
+[Events]
+Format: Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+`
+	for i := range sub.Lines {
+		start := formatDuration2SSA(sub.Lines[i].Start)
+		end := formatDuration2SSA(sub.Lines[i].End)
+		text := strings.Join(sub.Lines[i].Text, "\\N")
+		content += fmt.Sprintf("Dialogue: 0,%s,%s,DefaultVCD,NTP,0000,0000,0000,,{\\pos(400,570)}%s\n", start, end, text)
+	}
+	return content
+}
+
+func formatDuration2SSA(d time.Duration) string {
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	s := int(d.Seconds()) % 60
+	ms := int(d.Milliseconds()) % 1000
+	return fmt.Sprintf("%d:%02d:%02d.%02d", h, m, s, ms/10)
 }

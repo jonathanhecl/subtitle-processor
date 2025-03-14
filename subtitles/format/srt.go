@@ -2,6 +2,7 @@ package format
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -78,4 +79,15 @@ func formatStringSRT2Duration(line string) (start time.Duration, end time.Durati
 		return start, end, nil
 	}
 	return start, end, errors.New("not time")
+}
+
+func WriteSRT(sub *models.Subtitle) (content string) {
+	for i := range sub.Lines {
+		content += fmt.Sprintf("%d\n%v --> %v\n", sub.Lines[i].Seq, sub.Lines[i].Start, sub.Lines[i].End)
+		for j := range sub.Lines[i].Text {
+			content += sub.Lines[i].Text[j] + "\n"
+		}
+		content += "\n"
+	}
+	return content
 }
