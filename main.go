@@ -20,14 +20,13 @@ func main() {
 	fmt.Println(s1.Filename)
 	fmt.Println(s1.Format)
 	fmt.Println("Lines: ", len(s1.Lines))
-	/*
-		for i := range s1.Lines {
-			fmt.Println("Seq: ", s1.Lines[i].Seq)
-			fmt.Println("Start: ", s1.Lines[i].Start)
-			fmt.Println("End: ", s1.Lines[i].End)
-			fmt.Println("Text: ", s1.Lines[i].Text, len(s1.Lines[i].Text))
-		}
-	*/
+
+	for i := range s1.Lines {
+		fmt.Println("Seq: ", s1.Lines[i].Seq)
+		fmt.Println("Start: ", s1.Lines[i].Start)
+		fmt.Println("End: ", s1.Lines[i].End)
+		fmt.Println("Text: ", s1.Lines[i].Text, len(s1.Lines[i].Text))
+	}
 
 	fmt.Println("------------------")
 

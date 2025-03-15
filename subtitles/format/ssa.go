@@ -45,6 +45,8 @@ Dialogue: 0,0:00:01.18,0:00:06.85,DefaultVCD, NTP,0000,0000,0000,,{\pos(400,570)
 */
 
 func ReadSSA(content string) (ret []models.ModelItemSubtitle, err error) {
+	content = cleanText(content)
+
 	exp := regexp.MustCompile(`\[Script Info\]\n((?:\n?.)*?\n\n)\[(.*?)[ ]?Styles\]\n((?:\n?.)*?\n\n)\[Events\]\n(?:.*\n?)(^Dialogue: (\d),(\d*):(\d*):(\d*).(\d*),(\d*):(\d*):(\d*).(\d*),(\w*),[\w ]*,\d*,\d*,\d*,[\w*]?,{\\pos\(\d*,\d*\)}(.*)$)*`)
 	if !exp.MatchString(content) {
 		return ret, errors.New("Invalid SSA")
@@ -53,8 +55,6 @@ func ReadSSA(content string) (ret []models.ModelItemSubtitle, err error) {
 	res1 := exp.FindAllStringSubmatch(content, -1)
 	if len(res1) == 1 {
 		if len(res1[0]) == 5 {
-			//fmt.Println(len(res1[0]))
-			//fmt.Println(res1[0][4])
 			dialogues := res1[0][4]
 			exp = regexp.MustCompile(`(?m)^Dialogue: (\d),(\d*):(\d*):(\d*).(\d*),(\d*):(\d*):(\d*).(\d*),(\w*),[\w ]*,\d*,\d*,\d*,[\w*]?,{\\pos\(\d*,\d*\)}(.*)$`)
 			res2 := exp.FindAllStringSubmatch(dialogues, -1)
@@ -67,7 +67,7 @@ func ReadSSA(content string) (ret []models.ModelItemSubtitle, err error) {
 						dummy.Seq = seq
 						dummy.Start = formatSSA2Duration(res2[i][2], res2[i][3], res2[i][4], res2[i][5])
 						dummy.End = formatSSA2Duration(res2[i][6], res2[i][7], res2[i][8], res2[i][9])
-						text := strings.Split(res2[i][11], "\\N")
+						text := strings.Split(cleanText(res2[i][11]), "\\N")
 						dummy.Text = text
 					}
 					if dummy.Seq > 0 && dummy.Start.Milliseconds() > 0 &&
@@ -106,7 +106,11 @@ Format: Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 	for i := range sub.Lines {
 		start := formatDuration2SSA(sub.Lines[i].Start)
 		end := formatDuration2SSA(sub.Lines[i].End)
-		text := strings.Join(sub.Lines[i].Text, "\\N")
+		cleanedTexts := make([]string, len(sub.Lines[i].Text))
+		for j, text := range sub.Lines[i].Text {
+			cleanedTexts[j] = cleanText(text)
+		}
+		text := strings.Join(cleanedTexts, "\\N")
 		content += fmt.Sprintf("Dialogue: 0,%s,%s,DefaultVCD,NTP,0000,0000,0000,,{\\pos(400,570)}%s\n", start, end, text)
 	}
 	return content

@@ -31,16 +31,23 @@ Very good, Lieutenant.
 */
 
 func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
-	exp := regexp.MustCompile(`(\d)\n((\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*))\n((?:\n?.)*?)\n\n`)
+	content = cleanText(content)
+
+	exp := regexp.MustCompile(`(\d+)\n((\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*))\n((?:\n?.)*?)\n\n`)
 	if !exp.MatchString(content) {
 		return ret, errors.New("Invalid SRT")
 	}
 	lines := strings.Split(content, "\n")
 	dummy := models.ModelItemSubtitle{}
+
+	// Add a final empty line to ensure the last subtitle is processed
+	lines = append(lines, "")
+
 	for i := range lines {
 		if len(lines[i]) > 0 {
 			if dummy.Seq == 0 {
-				seq, err := strconv.Atoi(lines[i])
+				cleanLine := cleanText(lines[i])
+				seq, err := strconv.Atoi(cleanLine)
 				if err != nil {
 					return ret, err
 				}
@@ -51,18 +58,14 @@ func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
 					dummy.Start = start
 					dummy.End = end
 				} else {
-					dummy.Text = append(dummy.Text, lines[i])
+					dummy.Text = append(dummy.Text, cleanText(lines[i]))
 				}
 			}
-		} else if len(lines[i]) == 0 || len(lines) == i {
-			if dummy.Seq > 0 && dummy.Start.Milliseconds() > 0 &&
-				dummy.End.Milliseconds() > 0 && len(dummy.Text) > 0 {
+		} else if (len(lines[i]) == 0 || i == len(lines)-1) && dummy.Seq > 0 {
+			if dummy.Start.Milliseconds() > 0 && dummy.End.Milliseconds() > 0 && len(dummy.Text) > 0 {
 				ret = append(ret, dummy)
 			}
-			dummy.Seq = 0
-			dummy.Start = time.Duration(0)
-			dummy.End = time.Duration(0)
-			dummy.Text = []string{}
+			dummy = models.ModelItemSubtitle{} // empty
 		}
 	}
 	return ret, err
@@ -85,7 +88,7 @@ func WriteSRT(sub *models.Subtitle) (content string) {
 	for i := range sub.Lines {
 		content += fmt.Sprintf("%d\n%v --> %v\n", sub.Lines[i].Seq, sub.Lines[i].Start, sub.Lines[i].End)
 		for j := range sub.Lines[i].Text {
-			content += sub.Lines[i].Text[j] + "\n"
+			content += cleanText(sub.Lines[i].Text[j]) + "\n"
 		}
 		content += "\n"
 	}
