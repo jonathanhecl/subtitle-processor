@@ -12,14 +12,12 @@ import (
 )
 
 /*
+SRT Format Specification:
 
-STR Validation
-
+Regular Expression for validation:
 (\d)\n((\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*))\n((?:\n?.)*?)\n\n
 
-*/
-
-/*
+Example SRT Format:
 1
 00:02:17,440 --> 00:02:20,375
 Senator, we're making
@@ -30,6 +28,8 @@ our final approach into Coruscant.
 Very good, Lieutenant.
 */
 
+// ReadSRT parses SRT formatted subtitle content and converts it to the internal model.
+// Returns an error if the content is not a valid SRT format.
 func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
 	content = cleanText(content)
 
@@ -71,6 +71,8 @@ func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
 	return ret, err
 }
 
+// formatStringSRT2Duration parses a time range string in SRT format (00:00:00,000 --> 00:00:00,000)
+// and converts it to start and end time.Duration values.
 func formatStringSRT2Duration(line string) (start time.Duration, end time.Duration, err error) {
 	exp := regexp.MustCompile(`(\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*)`)
 	res := exp.FindAllStringSubmatch(line, -1)
@@ -84,6 +86,7 @@ func formatStringSRT2Duration(line string) (start time.Duration, end time.Durati
 	return start, end, errors.New("not time")
 }
 
+// WriteSRT converts subtitle data from the internal model to SRT formatted content.
 func WriteSRT(sub *models.Subtitle) (content string) {
 	for i := range sub.Lines {
 		content += fmt.Sprintf("%d\n%v --> %v\n", sub.Lines[i].Seq, sub.Lines[i].Start, sub.Lines[i].End)
