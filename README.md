@@ -19,15 +19,11 @@ The SubRip format is one of the most common subtitle formats. It consists of:
 - Text content
 - Blank line separator
 
-![SRT validation](https://i.imgur.com/1ait2i1.png)
-
 ### SSA (Sub Station Alpha)
 The Sub Station Alpha format is more complex and includes styling information:
 - Script Info section
 - Styles section
 - Events section with dialogue entries
-
-![SSA validation](https://i.imgur.com/1igtUyX.png)
 
 ## Installation
 
