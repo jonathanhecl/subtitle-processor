@@ -17,11 +17,11 @@ Test line 1
 Test line 2
 
 2
-00:02:30,500 --> 00:02:35,750
+00:02:30,500 --> 00:02:35,753
 Another test line
 
 3
-00:03:30,500 --> 00:03:35,750
+00:03:30,500 --> 00:03:35,758
 Yet another test line
 
 `
@@ -61,7 +61,7 @@ Yet another test line
 	if subtitles[1].Start != expectedStart {
 		t.Errorf("Expected start time %v, got %v", expectedStart, subtitles[1].Start)
 	}
-	expectedEnd = 2*time.Minute + 35*time.Second + 750*time.Millisecond
+	expectedEnd = 2*time.Minute + 35*time.Second + 753*time.Millisecond
 	if subtitles[1].End != expectedEnd {
 		t.Errorf("Expected end time %v, got %v", expectedEnd, subtitles[1].End)
 	}
@@ -77,11 +77,11 @@ Test line 1
 Test line 2
 
 2
-00:02:30,500 --> 00:02:35,750
+00:02:30,500 --> 00:02:35,753
 Another test line
 
 3
-00:03:30,500 --> 00:03:35,750
+00:03:30,500 --> 00:03:35,758
 Yet another test line
 
 `
@@ -298,9 +298,9 @@ func TestFormatDuration2SRT(t *testing.T) {
 		duration time.Duration
 		expected string
 	}{
-		{time.Hour + 2*time.Minute + 3*time.Second + 450*time.Millisecond, "1:02:03.45"},
-		{2*time.Hour + 59*time.Minute + 59*time.Second + 990*time.Millisecond, "2:59:59.99"},
-		{0, "0:00:00.00"},
+		{time.Hour + 2*time.Minute + 3*time.Second + 451*time.Millisecond, "1:02:03.451"},
+		{2*time.Hour + 59*time.Minute + 59*time.Second + 995*time.Millisecond, "2:59:59.995"},
+		{0, "0:00:00.000"},
 	}
 
 	for _, test := range tests {
@@ -317,8 +317,8 @@ func TestFormatDuration2SSA(t *testing.T) {
 		duration time.Duration
 		expected string
 	}{
-		{time.Hour + 2*time.Minute + 3*time.Second + 450*time.Millisecond, "1:02:03.45"},
-		{2*time.Hour + 59*time.Minute + 59*time.Second + 990*time.Millisecond, "2:59:59.99"},
+		{time.Hour + 2*time.Minute + 3*time.Second + 451*time.Millisecond, "1:02:03.45"},
+		{2*time.Hour + 59*time.Minute + 59*time.Second + 995*time.Millisecond, "2:59:59.99"},
 		{0, "0:00:00.00"},
 	}
 

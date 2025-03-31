@@ -114,7 +114,7 @@ func formatDuration2SRT(d time.Duration) string {
 	ms := int(d.Milliseconds()) % 1000
 
 	// Format the SRT time string
-	return fmt.Sprintf("%d:%02d:%02d.%02d", h, m, s, ms/10)
+	return fmt.Sprintf("%d:%02d:%02d.%03d", h, m, s, ms)
 }
 
 // WriteSRT converts subtitle data from the internal model to SRT formatted content.
