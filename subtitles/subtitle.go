@@ -38,19 +38,24 @@ func (sub *Subtitle) LoadFile(filename string) (err error) {
 	content += "\n\n"                                    // lastest line break
 	
 	// Try to parse as SRT format
-	ret, err := format.ReadSRT(content)
-	if err == nil {
+	ret, errSRT := format.ReadSRT(content)
+	if errSRT == nil {
 		sub.Format = "SRT"
 		sub.Lines = ret
 	}
 	
 	// If not SRT, try to parse as SSA format
 	if len(sub.Format) == 0 {
-		ret, err := format.ReadSSA(content)
-		if err == nil {
+		retSSA, errSSA := format.ReadSSA(content)
+		if errSSA == nil {
 			sub.Format = "SSA"
-			sub.Lines = ret
+			sub.Lines = retSSA
+			err = nil // Clear the error if SSA parsing succeeds
+		} else {
+			err = errors.New("unsupported subtitle format")
 		}
+	} else {
+		err = errSRT // Use SRT error if that was the intended format
 	}
 
 	// Print processing time if verbose mode is enabled

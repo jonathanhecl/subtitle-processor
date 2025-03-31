@@ -20,6 +20,10 @@ Test line 2
 00:02:30,500 --> 00:02:35,750
 Another test line
 
+3
+00:03:30,500 --> 00:03:35,750
+Yet another test line
+
 `
 
 	// Parse the SRT content
@@ -29,8 +33,8 @@ Another test line
 	}
 
 	// Verify the parsed data
-	if len(subtitles) != 2 {
-		t.Errorf("Expected 2 subtitle entries, got %d", len(subtitles))
+	if len(subtitles) != 3 {
+		t.Errorf("Expected 3 subtitle entries, got %d", len(subtitles))
 	}
 
 	// Check first subtitle
@@ -64,7 +68,7 @@ Another test line
 	if !reflect.DeepEqual(subtitles[1].Text, []string{"Another test line"}) {
 		t.Errorf("Expected text ['Another test line'], got %v", subtitles[1].Text)
 	}
-	
+
 	// Create a new SRT content with the same data for verification
 	// This is needed because the WriteSRT function might format timestamps differently
 	validSrtContent := `1
@@ -75,6 +79,10 @@ Test line 2
 2
 00:02:30,500 --> 00:02:35,750
 Another test line
+
+3
+00:03:30,500 --> 00:03:35,750
+Yet another test line
 
 `
 	// Parse the valid SRT content to verify it's valid
@@ -177,26 +185,26 @@ Dialogue: 0,0:02:30.50,0:02:35.75,DefaultVCD,NTP,0000,0000,0000,,{\pos(400,570)}
 		if parsed.Seq != original.Seq {
 			t.Errorf("Entry %d: Expected sequence %d, got %d", i, original.Seq, parsed.Seq)
 		}
-		
+
 		// Allow for small time differences due to SSA format precision
 		startDiff := parsed.Start - original.Start
 		if startDiff < 0 {
 			startDiff = -startDiff
 		}
 		if startDiff > 100*time.Millisecond {
-			t.Errorf("Entry %d: Start time difference too large: %v vs %v (diff: %v)", 
+			t.Errorf("Entry %d: Start time difference too large: %v vs %v (diff: %v)",
 				i, original.Start, parsed.Start, startDiff)
 		}
-		
+
 		endDiff := parsed.End - original.End
 		if endDiff < 0 {
 			endDiff = -endDiff
 		}
 		if endDiff > 100*time.Millisecond {
-			t.Errorf("Entry %d: End time difference too large: %v vs %v (diff: %v)", 
+			t.Errorf("Entry %d: End time difference too large: %v vs %v (diff: %v)",
 				i, original.End, parsed.End, endDiff)
 		}
-		
+
 		// Check text content
 		if len(parsed.Text) != len(original.Text) {
 			t.Errorf("Entry %d: Expected %d text lines, got %d", i, len(original.Text), len(parsed.Text))
@@ -281,5 +289,43 @@ func TestTimeFormatting(t *testing.T) {
 	expectedString := "1:30:45.50"
 	if ssaTime != expectedString {
 		t.Errorf("Expected SSA time string %s, got %s", expectedString, ssaTime)
+	}
+}
+
+// TestFormatDuration2SRT tests the formatDuration2SRT function
+func TestFormatDuration2SRT(t *testing.T) {
+	tests := []struct {
+		duration time.Duration
+		expected string
+	}{
+		{time.Hour + 2*time.Minute + 3*time.Second + 450*time.Millisecond, "1:02:03.45"},
+		{2*time.Hour + 59*time.Minute + 59*time.Second + 990*time.Millisecond, "2:59:59.99"},
+		{0, "0:00:00.00"},
+	}
+
+	for _, test := range tests {
+		result := formatDuration2SRT(test.duration)
+		if result != test.expected {
+			t.Errorf("formatDuration2SRT(%v) = %v; want %v", test.duration, result, test.expected)
+		}
+	}
+}
+
+// TestFormatDuration2SSA tests the formatDuration2SSA function
+func TestFormatDuration2SSA(t *testing.T) {
+	tests := []struct {
+		duration time.Duration
+		expected string
+	}{
+		{time.Hour + 2*time.Minute + 3*time.Second + 450*time.Millisecond, "1:02:03.45"},
+		{2*time.Hour + 59*time.Minute + 59*time.Second + 990*time.Millisecond, "2:59:59.99"},
+		{0, "0:00:00.00"},
+	}
+
+	for _, test := range tests {
+		result := formatDuration2SSA(test.duration)
+		if result != test.expected {
+			t.Errorf("formatDuration2SSA(%v) = %v; want %v", test.duration, result, test.expected)
+		}
 	}
 }

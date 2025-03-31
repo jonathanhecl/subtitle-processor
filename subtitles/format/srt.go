@@ -33,42 +33,61 @@ Very good, Lieutenant.
 func ReadSRT(content string) (ret []models.ModelItemSubtitle, err error) {
 	content = cleanText(content)
 
-	exp := regexp.MustCompile(`(\d+)\n((\d*)\:(\d*)\:(\d*)[\.,\:](\d*) --> (\d*)\:(\d*)\:(\d*)[\.,\:](\d*))\n((?:\n?.)*?)\n\n`)
-	if !exp.MatchString(content) {
-		return ret, errors.New("Invalid SRT")
-	}
+	// Split content into lines
 	lines := strings.Split(content, "\n")
-	dummy := models.ModelItemSubtitle{}
 
-	// Add a final empty line to ensure the last subtitle is processed
-	lines = append(lines, "")
+	var currentSubtitle models.ModelItemSubtitle
+	var parsingText bool
+	var hasSubtitles bool
 
-	for i := range lines {
-		if len(lines[i]) > 0 {
-			if dummy.Seq == 0 {
-				cleanLine := cleanText(lines[i])
-				seq, err := strconv.Atoi(cleanLine)
-				if err != nil {
-					return ret, err
-				}
-				dummy.Seq = seq
-			} else if dummy.Seq > 0 {
-				start, end, err := formatStringSRT2Duration(lines[i])
-				if err == nil {
-					dummy.Start = start
-					dummy.End = end
-				} else {
-					dummy.Text = append(dummy.Text, cleanText(lines[i]))
-				}
+	for i := 0; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+
+		// Skip empty lines
+		if line == "" {
+			// If we were parsing text, this empty line indicates the end of a subtitle
+			if parsingText && currentSubtitle.Seq > 0 {
+				ret = append(ret, currentSubtitle)
+				currentSubtitle = models.ModelItemSubtitle{}
+				parsingText = false
 			}
-		} else if (len(lines[i]) == 0 || i == len(lines)-1) && dummy.Seq > 0 {
-			if dummy.Start.Milliseconds() > 0 && dummy.End.Milliseconds() > 0 && len(dummy.Text) > 0 {
-				ret = append(ret, dummy)
+			continue
+		}
+
+		// If not parsing text, check if this is a sequence number
+		if !parsingText {
+			seq, err := strconv.Atoi(line)
+			if err == nil {
+				currentSubtitle.Seq = seq
+				continue
 			}
-			dummy = models.ModelItemSubtitle{} // empty
+
+			// If not a sequence number, check if it's a timestamp
+			start, end, err := formatStringSRT2Duration(line)
+			if err == nil {
+				currentSubtitle.Start = start
+				currentSubtitle.End = end
+				parsingText = true
+				hasSubtitles = true
+				continue
+			}
+		} else {
+			// We're parsing text, add this line to the current subtitle
+			currentSubtitle.Text = append(currentSubtitle.Text, cleanText(line))
 		}
 	}
-	return ret, err
+
+	// Add the last subtitle if we were parsing one
+	if parsingText && currentSubtitle.Seq > 0 {
+		ret = append(ret, currentSubtitle)
+	}
+
+	// If no subtitles were found, return an error
+	if !hasSubtitles || len(ret) == 0 {
+		return nil, errors.New("Invalid SRT")
+	}
+
+	return ret, nil
 }
 
 // formatStringSRT2Duration parses a time range string in SRT format (00:00:00,000 --> 00:00:00,000)
@@ -86,10 +105,22 @@ func formatStringSRT2Duration(line string) (start time.Duration, end time.Durati
 	return start, end, errors.New("not time")
 }
 
+// formatDuration2SRT converts a time.Duration to SRT time format string (h:mm:ss.cc).
+func formatDuration2SRT(d time.Duration) string {
+	// Extract the hour, minute, second, and millisecond components from the time.Duration
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	s := int(d.Seconds()) % 60
+	ms := int(d.Milliseconds()) % 1000
+
+	// Format the SRT time string
+	return fmt.Sprintf("%d:%02d:%02d.%02d", h, m, s, ms/10)
+}
+
 // WriteSRT converts subtitle data from the internal model to SRT formatted content.
 func WriteSRT(sub *models.Subtitle) (content string) {
 	for i := range sub.Lines {
-		content += fmt.Sprintf("%d\n%v --> %v\n", sub.Lines[i].Seq, sub.Lines[i].Start, sub.Lines[i].End)
+		content += fmt.Sprintf("%d\n%s --> %s\n", sub.Lines[i].Seq, formatDuration2SRT(sub.Lines[i].Start), formatDuration2SRT(sub.Lines[i].End))
 		for j := range sub.Lines[i].Text {
 			content += cleanText(sub.Lines[i].Text[j]) + "\n"
 		}
